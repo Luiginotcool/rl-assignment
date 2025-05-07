@@ -38,21 +38,23 @@ class GridWorld():
 
     # Properties of the GridWorld
     self._shape = (13, 10)
+    self._grid = [(x,y) for x in range(0, self._shape[0]+1) for y in range(0, self._shape[1]+1)]
+    
     
     # Location of cliffs
-    self._cliffs = None
+    self._cliffs = [(x,0) for x in range(0, 9+1)] + [(x,y) for x in range(0, 4) for y in range(4, 9)] + [(x,y) for x in range(7, 9) for y in range(4, 7)]
 
     # Location of wall
-    self._walls = None
+    self._walls = [(x,9) for x in range(0, 4)] + [(x, 7) for x in range(7, 10)]
 
     # Denote locations that end an episode
-    self._terminal_locs = None
+    self._terminal_locs = [(8, 9), (1, 2)] + self._cliffs
 
     # Setup reward/penalties
-    self._terminal_rewards = None
+    self._terminal_rewards = [250, 5000] + [-100 for i in self._cliffs]
     
     # Define a location for trials to start
-    self._starting_loc = None
+    self._starting_loc = (1,11)
     
     # Reward for standard tiles in GridWorld
     self._default_reward = 0
@@ -191,7 +193,12 @@ class GridWorld():
     the grid ***
     
     """
-    raise NotImplementedError()
+
+    iswall = loc in self._walls
+    ingrid = (loc[0] > 0 and loc[0] < self._shape[0] and loc[1] > 0 and loc[1] < self._shape[1])
+    
+    isloc = !iswall and ingrid
+    return isloc
 
 
   def _get_state_from_loc(self, loc):
