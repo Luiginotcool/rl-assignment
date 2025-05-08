@@ -37,7 +37,7 @@ class GridWorld():
     """
 
     # Properties of the GridWorld
-    self._shape = (13, 10)
+    self._shape = (10, 13)
     self._grid = [(x,y) for x in range(0, self._shape[0]+1) for y in range(0, self._shape[1]+1)]
     
     
@@ -48,10 +48,10 @@ class GridWorld():
     self._walls = [(x,9) for x in range(0, 4)] + [(x, 7) for x in range(7, 10)]
 
     # Denote locations that end an episode
-    self._terminal_locs = [(8, 9), (1, 2)] + self._cliffs
+    self._terminal_locs = self._goal_loc + self._cliffs
 
     # Setup reward/penalties
-    self._terminal_rewards = [250, 5000] + [-100 for i in self._cliffs]
+    self._terminal_rewards = self._goal_rewards + [-100 for i in self._cliffs]
     
     # Define a location for trials to start
     self._starting_loc = (1,11)
@@ -195,9 +195,11 @@ class GridWorld():
     """
 
     iswall = loc in self._walls
-    ingrid = (loc[0] > 0 and loc[0] < self._shape[0] and loc[1] > 0 and loc[1] < self._shape[1])
-    
-    isloc = !iswall and ingrid
+    ingrid = (loc[0] >= 0 and loc[0] < self._shape[0] and loc[1] >= 0 and loc[1] < self._shape[1])
+    isloc = (not iswall) and ingrid
+    if (False):
+      print(loc, isloc, not iswall, ingrid)
+      print((loc[0] >= 0, loc[0] < self._shape[0], loc[1] >= 0, loc[1] < self._shape[1]))
     return isloc
 
 

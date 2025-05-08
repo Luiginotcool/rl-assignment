@@ -1,0 +1,291 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033\deflangfe2052{\fonttbl{\f0\fswiss\fprq2\fcharset0 Arial;}{\f1\fnil\fcharset2 Symbol;}}
+{\colortbl ;\red0\green0\blue0;}
+{\*\generator Riched20 10.0.19041}{\*\mmathPr\mnaryLim0\mdispDef1\mwrapIndent1440 }\viewkind4\uc1 
+\pard\widctlpar\sl276\slmult1\cf1\f0\fs22 We can model the robot's decision making process with a Markov Decision Process, with:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\fi-360\li1080\sl276\slmult1\tx360\tx1080 a set of states S representing the possible positions the robot can have, \par
+{\pntext\f1\'B7\tab}a set of actions A available to the robot, \par
+{\pntext\f1\'B7\tab}A transition probability function P(s\rquote  | s,a) that defines the likelihood of moving to state s\rquote  after taking action a in state s,\par
+{\pntext\f1\'B7\tab}A reward function R(s,a,s\rquote ) specifying the immediate reward received when taking action a in state s and transitioning to state s\rquote\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\sl276\slmult1\par
+{\pntext\f1\'B7\tab}The robot starts from a state s with the goal of selecting actions that maximise the expected return. The agent selects actions according to a policy PI(a|s).\par
+{\pntext\f1\'B7\tab}The total return the agent receives is defined as: \par
+{\pntext\f1\'B7\tab}G_t = R_t+1 + gamma R_t+2 + gamma^2 R_t+3 + \'85\par
+{\pntext\f1\'B7\tab}And G_t+1 = R_t+2 + gamma R_t+3 + \'85\par
+{\pntext\f1\'B7\tab}=> G_t = R_t+1 + gamma G_t+1\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}We can denote the expected return of taking an action a in state s as q^pi(a,s) defined as \par
+{\pntext\f1\'B7\tab}q^pi(s,a) = E_pi(G_t | S_t = s, A_t = a)\par
+{\pntext\f1\'B7\tab}This is equivalent to saying\par
+{\pntext\f1\'B7\tab}q^pi(s,a) + E_pi(R_t+1 + gamma q^pi(s\rquote , a\rquote ) | S_t = a, A_t = a)\par
+{\pntext\f1\'B7\tab}=> E_pi(R_t+1 + gamma q^pi(s\rquote , a\rquote ) - q^pi(s, a) | S_t = a, A_t = a) = 0\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}In order to maximise the expected return in any given state, the robot should select the action which maximises q^pi(s, a). However, the true values of q^pi(a,s) are not known to the robot. We therefore introduce a parameterised Q(s,a) to estimate them. The expectation then becomes approximately zero:\line E_pi(R_t+1 + gamma Q^pi(s\rquote , a\rquote ) - Q^pi(s, a) | S_t = a, A_t = a) = 0\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}We define a squared loss function around this quantity in order to make it minimizable. Minimising this loss function will provide us with an approximation of q^pi which the robot can use to take actions which will maximise the estimated return.\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}For a single transition (s, a, r, s\rquote , a\rquote ) the loss function is:\par
+{\pntext\f1\'B7\tab}L(s,a)  = \'bd (Q(s,a) - (r + gamma Q(s\rquote , a\rquote )))^2\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}Assuming Q(s\rquote , a\rquote ) is known and fixed, we take the partial derivative of the loss function with respect to Q(s,a):\par
+{\pntext\f1\'B7\tab}\b\i DERIVATIVE OF LOSS FUNCTION\b0\i0 *\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}To update Q(s,a) we apply:\par
+{\pntext\f1\'B7\tab}\tab **ONLINE UPDATE RULE**\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}Using this update rule we can write an algorithm to estimate q^pi, and maximise the reward the robot receives:\line\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}Initialise Q(s,a) arbitrarily for all s in S and a in A.\par
+{\pntext\f1\'B7\tab}For each episode:\par
+{\pntext\f1\'B7\tab}\tab Initialise state s\par
+{\pntext\f1\'B7\tab}\tab Choose action a from s using a policy derived from Q\par
+{\pntext\f1\'B7\tab}\tab For each step of the episode:\par
+{\pntext\f1\'B7\tab}\tab\tab Take action a, observe reward r and next state s\rquote\par
+{\pntext\f1\'B7\tab}\tab\tab If s\rquote  is terminal:\par
+{\pntext\f1\'B7\tab}\tab\tab\tab Update Q(s,a): Q(s,a) <- Q(s,a) + eta*(r-Q(s,a))\par
+{\pntext\f1\'B7\tab}\tab\tab\tab Break\par
+{\pntext\f1\'B7\tab}\tab\tab Choose action a\rquote  from s\rquote  using a policy derived from Q\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\fi720\li720\sl276\slmult1 Update Q(s,a): Q(s,a) <- Q(s,a) + eta * (r + gamma Q(s\rquote ,a\rquote ) - Q(s,a)\par
+{\pntext\f1\'B7\tab}Update state and action: s <- s\rquote , a <- a\rquote\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\sl276\slmult1\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}SERSA algorithm with epsilon-greedy policy:\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\fi-360\li1080\sl276\slmult1\tx360\tx1080 One goal\par
+{\pntext\f1\'B7\tab}Two goals, doesn\rquote t work\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\sl276\slmult1\par
+{\pntext\f1\'B7\tab}Increase steps, change gamma\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}Increase epsilon so that it reaches far goal\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}Add epsilon schedule 1, linear decay over steps\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\fi-360\li1080\sl276\slmult1\tx360\tx1080 Reaches far goal, doesn\rquote t reach it consistently\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\sl276\slmult1\par
+{\pntext\f1\'B7\tab}Try SERSA lambda algorithm\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\fi-360\li1080\sl276\slmult1\tx360\tx1080 Takes much longer\par
+{\pntext\f1\'B7\tab}Didn\rquote t converge in feasible timespan\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\sl276\slmult1\par
+{\pntext\f1\'B7\tab}Add epsilon schedule 2, staged over episodes\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\fi-360\li1080\sl276\slmult1\tx360\tx1080 Reaches far goal consistently\par
+
+\pard{\pntext\f1\'B7\tab}{\*\pn\pnlvlblt\pnf1\pnindent360{\pntxtb\'B7}}\widctlpar\sl276\slmult1\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}PLOT 1:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 458\par
+{\pntext\f1\'B7\tab}0.0 28\par
+{\pntext\f1\'B7\tab}5000.0 4514\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0   n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}  eta= 0.5,\par
+{\pntext\f1\'B7\tab}  gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}  epsilon = 0.1\par
+{\pntext\f1\'B7\tab}\b Environment:\b0\par
+{\pntext\f1\'B7\tab}goal_locations=[(1, 2)], goal_rewards=[5000]\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}PLOT 2:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 5\par
+{\pntext\f1\'B7\tab}0.0 2\par
+{\pntext\f1\'B7\tab}250.0 4993\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}  \tab eta= 0.5,\par
+{\pntext\f1\'B7\tab}  \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}  \tab epsilon = 0.1\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}PLOT 3:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 24\par
+{\pntext\f1\'B7\tab}250.0 4976\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}  \tab eta= 0.5,\par
+{\pntext\f1\'B7\tab}  \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}  \tab epsilon = 0.5\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\par
+{\pntext\f1\'B7\tab}\b\par
+{\pntext\f1\'B7\tab}\b0 PLOT 4:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 983\par
+{\pntext\f1\'B7\tab}0.0 1\par
+{\pntext\f1\'B7\tab}250.0 4009\par
+{\pntext\f1\'B7\tab}5000.0 7\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}  \tab eta= 0.5,\par
+{\pntext\f1\'B7\tab}  \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}  \tab epsilon = 0.9\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\par
+{\pntext\f1\'B7\tab}\b\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b0 PLOT 5:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 179\par
+{\pntext\f1\'B7\tab}0.0 179\par
+{\pntext\f1\'B7\tab}250.0 4638\par
+{\pntext\f1\'B7\tab}5000.0 4\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}  \tab eta= 0.98,\par
+{\pntext\f1\'B7\tab}  \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}  \tab epsilon_start = 1,\par
+{\pntext\f1\'B7\tab}  \tab epsilon_decay = 65,\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\b\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b0 PLOT 6:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 280\par
+{\pntext\f1\'B7\tab}0.0 1455\par
+{\pntext\f1\'B7\tab}250.0 3257\par
+{\pntext\f1\'B7\tab}5000.0 8\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0   \tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}  \tab eta = 0.99,\par
+{\pntext\f1\'B7\tab}  \tab gamma = 1,\par
+{\pntext\f1\'B7\tab}  \tab epsilon_start = 1,\par
+{\pntext\f1\'B7\tab}  \tab epsilon_decay = 85\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}PLOT 7:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 4\par
+{\pntext\f1\'B7\tab}250.0 996\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\tab n_episodes = 1000,\par
+{\pntext\f1\'B7\tab}  \tab eta= 0.98,\par
+{\pntext\f1\'B7\tab}  \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}  \tab epsilon_start = 1,\par
+{\pntext\f1\'B7\tab}  \tab epsilon_decay = 250,\par
+{\pntext\f1\'B7\tab}  \tab lambda_ = 0.5\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}PLOT 8:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 25\par
+{\pntext\f1\'B7\tab}0.0 12\par
+{\pntext\f1\'B7\tab}250.0 4945\par
+{\pntext\f1\'B7\tab}5000.0 18\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0     \tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}    \tab eta= 0.95,\par
+{\pntext\f1\'B7\tab}    \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}   \tab stage_2_time=200,\par
+{\pntext\f1\'B7\tab}   \tab stage_2_rate=0.1\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\b\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}PLOT 9:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 27\par
+{\pntext\f1\'B7\tab}0.0 101\par
+{\pntext\f1\'B7\tab}250.0 821\par
+{\pntext\f1\'B7\tab}5000.0 4051\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0     \tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}    \tab eta= 0.95,\par
+{\pntext\f1\'B7\tab}    \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}   \tab stage_2_time=1000,\par
+{\pntext\f1\'B7\tab}   \tab stage_2_rate=0.1\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\b\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}PLOT 10:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}-100.0 27\par
+{\pntext\f1\'B7\tab}0.0 41\par
+{\pntext\f1\'B7\tab}250.0 800\par
+{\pntext\f1\'B7\tab}5000.0 4132\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0     \tab n_episodes = 5000,\par
+{\pntext\f1\'B7\tab}    \tab eta= 0.5,\par
+{\pntext\f1\'B7\tab}    \tab gamma = 1 - 0.01,\par
+{\pntext\f1\'B7\tab}   \tab stage_2_time=1000,\par
+{\pntext\f1\'B7\tab}   \tab stage_2_rate=0\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\b0 goal_locations=[(1,2), (8,11)], goal_rewards=[5000, 250]\b\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}PLOT X:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}PLOT X:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}PLOT X:\par
+{\pntext\f1\'B7\tab}\b Rewards\b0 :\par
+{\pntext\f1\'B7\tab}\par
+{\pntext\f1\'B7\tab}\b Params:\par
+{\pntext\f1\'B7\tab}\b0\par
+{\pntext\f1\'B7\tab}\b Environment:\par
+}
+ 
